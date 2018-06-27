@@ -91,7 +91,7 @@ export const fetchPlayers = () => {
  * @param {} player  player
  * @param {} amount 金额 
  */
-export const deposit = (player, amount) => {
+export const deposit = (player,  amount) => {
     return dispatch => {
         console.log(`action:editPlayer:deposit:0:amount:${amount}`)
         // 1 player balance 添加 
@@ -100,7 +100,7 @@ export const deposit = (player, amount) => {
             .then(function (player) {
                 console.log(`action:editPlayer:deposit:setPlayerBalance:1`)
                 // 3 Log添加一条deposit记录
-                return insertLog(null, player, TYPE_DEPOSIT, amount);
+                return insertLog(null, player, null, TYPE_DEPOSIT, amount);
             }).then(function (log) {
                 console.log(`action:editPlayer:deposit:insertLog:2`)
             }, function (error) {
@@ -114,7 +114,7 @@ export const deposit = (player, amount) => {
  * @param {} player  player
  * @param {} amount 金额 
  */
-export const withdraw = (player, amount) => {
+export const withdraw = (player,  amount) => {
     return dispatch => {
         // 1 player balance 添加 
         // 2 Log添加一条TYPE_DEPOSIT记录
@@ -122,7 +122,7 @@ export const withdraw = (player, amount) => {
             .then(function (gamePlayer) {
                 console.log(`action:editPlayer:withdraw:setPlayerBalance:1`)
                 // 3 Log添加一条withdraw记录
-                return insertLog(null, player, TYPE_WITHDRAW, amount);
+                return insertLog(null, player, null, TYPE_WITHDRAW, amount);
             }).then(function (log) {
                 console.log(`action:editPlayer:withdraw:insertLog:2`)
             }, function (error) {

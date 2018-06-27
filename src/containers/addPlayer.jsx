@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, WingBlank, InputItem, Toast, List, Radio } from 'antd-mobile';
+import { Button, WingBlank, InputItem, Toast, List, Picker, Modal, ActionSheet } from 'antd-mobile';
 import { createForm, createFormField } from 'rc-form';
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
@@ -9,7 +9,23 @@ import { EditHeader } from '../components/editHeader';
 
 const Item = List.Item;
 const Brief = Item.Brief;
-const RadioItem = Radio.RadioItem;
+const prompt = Modal.prompt;
+const alert = Modal.alert;
+const myList = {
+    flexBasis: 'initial',
+}
+
+//actionSheet相关
+const isIPhone = new RegExp('\\biPhone\\b|\\biPod\\b', 'i').test(window.navigator.userAgent);
+let wrapProps;
+if (isIPhone) {
+    wrapProps = {
+        onTouchStart: e => e.preventDefault(),
+    };
+}
+const BUTTONS = ['删除', '取消'];
+
+
 class PlayerList extends React.Component {
     constructor(props) {
         super(props);
@@ -52,35 +68,123 @@ class PlayerList extends React.Component {
         }
     }
 
-    onSubmit = () => {
-        let rakeoff = this.state.checkedRakeoff;
-        if (!rakeoff) {
-            let errors = `请选择回水方案，只能单选`;
-            Toast.fail(errors, 2, null, true);
-            return;
-        }
 
+    onSonClicked = (son) => {
+        let that = this;
+        console.log(`addPlayer:onSonClicked:son:${son.name}`);
+        //弹出操作actionSheet
+        ActionSheet.showActionSheetWithOptions({
+            options: BUTTONS,
+            cancelButtonIndex: BUTTONS.length - 1,
+            destructiveButtonIndex: BUTTONS.length - 2,
+            title: '玩家操作',
+            message: `对子玩家[${son.name}]进行如下操作`,
+            maskClosable: true,
+            'data-seed': 'logId',
+            wrapProps,
+        },
+            (buttonIndex) => {
+                //根据按钮位置 确定操作
+                switch (buttonIndex) {
+                    case 0:
+                        that.showDeleteSonModal(son);
+                        break;
+                }
+
+            });
+    }
+
+    onAddSonClicked = () => {
+        this.showAddSonModal();
+    }
+    /**
+       * 显示上分对话框
+       * @param {*} gamePlayer 
+       */
+    showAddSonModal() {
+        let that = this;
+        prompt('新增子玩家', `新增子玩家`, [
+            { text: '取消' },
+            {
+                text: '确定 ',
+                onPress: (value) => {
+                    const { form } = that.props;
+                    let sons = form.getFieldValue('sons');
+                    let son = { name: value };
+                    sons.push(son);
+                    form.setFieldsValue({ sons });
+                    console.log(`addPlayer:showAddSonModal:${sons && sons.length}`);
+                }
+            },
+        ], 'default', '', ['请输入子玩家名称']);
+    }
+
+
+    showDeleteSonModal(son) {
+        let that = this;
+        alert('删除', `确定删除${son.name}`, [
+            { text: '取消', onPress: () => console.log('cancel'), style: 'default' },
+            {
+                text: '确定', onPress: () => {
+                    console.log(`addPlayer:showDeleteSonModal:son:${son.name}`)
+                    let sons = that.props.form.getFieldValue('sons');
+                    let index = sons.findIndex(function (value, index, arr) {
+                        return value.name == son.name;
+                    })
+                    if (index !== -1) {
+                        sons.splice(index, 1);
+                        that.props.form.setFieldsValue({ sons });
+                    }
+                }
+            },
+        ]);
+    }
+
+
+    onSubmit = () => {
         let { form } = this.props;
         form.validateFields({ force: true }, (error, values) => {
             if (!error) {
-                let player = { ...form.getFieldsValue(), rakeoff };
+                let player = { ...form.getFieldsValue() };
+
+                console.log(`addPlayer:onSubmit:player:${JSON.stringify(player)}`);
                 this.props.save(player);
             } else {
-                let errors = `${form.getFieldError('name') ? form.getFieldError('name').join('') + '\n' : ''}`;
+                let errors = `${form.getFieldError('name') ? form.getFieldError('name').join('') + '\n' : ''}
+                ${form.getFieldError('rakeoff') ? form.getFieldError('rakeoff').join('') + '\n' : ''}
+                ${form.getFieldError('sons') ? form.getFieldError('sons').join('') + '\n' : ''}`;
                 Toast.fail(errors, 2, null, true);
             }
         });
     }
 
-
-    onRakeoffChanged = (rakeoff, e) => {
-        this.setState({ checkedRakeoff: rakeoff });
-    }
-
     render() {
         const { getFieldProps, getFieldValue, getFieldError, setFieldsValue } = this.props.form;
+
+        getFieldProps('rakeoff', {
+            initialValue: [],
+            rules: [
+                { required: true, message: '请选择回水方案。' },
+                { validator: this.validateField },
+            ],
+        });
+
+        getFieldProps('sons', {
+            initialValue: [],
+            rules: [
+                { required: true, message: '请添加子玩家。' },
+                { validator: this.validateField },
+            ],
+        });
+
         let rakeoffs = this.props.rakeoffs;
-        let checkedRakeoff = this.state.checkedRakeoff;
+        let pickerRakeoffs = [];
+        for (let rakeoff of rakeoffs) {
+            let pickerRakeoff = { value: rakeoff.id, label: `${rakeoff.get('name')} 赢:${rakeoff.get('win')}% 输:${rakeoff.get('lose')}` }
+            pickerRakeoffs.push(pickerRakeoff);
+        }
+
+        let sons = getFieldValue('sons');
         return (
             <div>
                 <EditHeader
@@ -89,9 +193,7 @@ class PlayerList extends React.Component {
                     goBack={() => this.props.history.goBack()}
                 />
                 <WingBlank>
-                    <List
-                        renderHeader={() => '请输入比赛信息'}
-                        className="my-list">
+                    <List renderHeader={() => '请输入比赛信息'} style={myList}>
                         <InputItem
                             {...getFieldProps('name', {
                                 name: 'name',
@@ -107,16 +209,44 @@ class PlayerList extends React.Component {
                                 Toast.fail(getFieldError('name').join(','));
                             }}
                         >名称:</InputItem>
-
                     </List>
 
-                    <List renderHeader={() => '请选择回水方案'}>
-                        {rakeoffs && rakeoffs.map(rakeoff => (
-                            <RadioItem key={rakeoff.id} checked={checkedRakeoff == rakeoff} onChange={(e) => this.onRakeoffChanged(rakeoff, e)}>
-                                {rakeoff.get('name')} 赢:{rakeoff.get('win')}% 输:{rakeoff.get('lose')}%
-                            </RadioItem>
-                        ))}
+                    <Picker
+                        data={pickerRakeoffs}
+                        title="选择回水方案:"
+                        value={this.state.pickerRakeoff}
+                        onChange={v => {
+                            this.setState({ pickerRakeoff: v })
+                        }}
+                        onOk={v => {
+                            let rakeoff = rakeoffs.find(function (value, index, arr) {
+                                return value.id == v;
+                            });
+                            if (rakeoff) {
+                                console.log(`addPlayer:pickerRakeoff:${rakeoff}`);
+                                setFieldsValue({ rakeoff })
+                            }
+                        }}
+                    >
+                        <List.Item arrow="horizontal">选择回水方案:</List.Item>
+                    </Picker>
+
+                    <List renderHeader={() => '子玩家'} style={myList}>
+                        {
+                            sons && sons.map((son, index) => (
+                                <Item
+                                    key={index}
+                                    arrow='horizontal'
+                                    onClick={() => { this.onSonClicked(son) }}
+                                >{son.name}</Item>
+                            ))
+                        }
                     </List>
+                    <Button
+                        type='primary'
+                        onClick={this.onAddSonClicked}
+                        disabled={this.props.saving}
+                    >添加子玩家</Button>
                 </WingBlank>
 
             </div >

@@ -95,6 +95,7 @@ export const fetchGamePlayers = (game) => {
         query.descending('_created_at');
         query.equalTo('game', game);
         query.include('player');
+        query.include('son');
         query.find()
             .then(function (results) {
                 dispatch({ type: FETCH_GAME_PLAYERS_SUCCESSFUL, gamePlayers: results });
@@ -119,6 +120,7 @@ export const up = (gamePlayer, amount) => {
     return dispatch => {
         let game = gamePlayer.get('game');
         let player = gamePlayer.get('player');
+        let son = gamePlayer.get('son');
         // 1 gameplayer 对象的chips增加 
         // 2 player balance 减少 
         // 3 Log添加一条up记录
@@ -130,7 +132,7 @@ export const up = (gamePlayer, amount) => {
         }).then(function (gamePlayer) {
             console.log(`action:viewGame:up:insertLog:2`)
             // 3 Log添加一条up记录
-            return insertLog(game, player, TYPE_UP, amount);
+            return insertLog(game, player,son, TYPE_UP, amount);
         }, function (error) {
             console.log(`action:viewGame:up:error:${error}`);
         })

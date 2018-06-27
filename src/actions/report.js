@@ -59,22 +59,23 @@ export const clear = () => {
  * 
  * @param {Parse.Object.extend("Player")} player 
  */
-export const save = (date) => {
+export const save = () => {
     return dispatch => {
         //获取最近时间
         //获取这个时间段的所有充值 提现 上分下分 水钱 都提取出来 存入report
         //获取这个时间段的所有比赛 
         //获取这个时间段的所有玩家数据
         let lastReport;
-        let lastEnd;
+        let start;
+        let end = new Date();
         getLastReport().then(function (report) {
             console.log(`action:report:save:getLastReport:`);
             lastReport = report;
             if (lastReport)
-                lastEnd = lastReport.get('end');
-            return fetchLogsByDate(lastEnd, date);
+                start = lastReport.get('end');
+            return fetchLogsByDate(start, end);
         }).then(function (logs) {
-            console.log(`action:report:save:getLastReport:${logs && logs.length}`);
+            console.log(`action:report:save:fetchLogsByDate:logs:${logs && logs.length}`);
             let up = 0;
             let down = 0;
             let deposit = 0;
@@ -82,8 +83,9 @@ export const save = (date) => {
             let shui = 0;
             let games = [];
             let players = [];
+            let sons = [];
 
-            logs.map((log, index) => {
+            logs.map((log) => {
                 let amount = log.get('amount');
                 switch (log.get('type')) {
                     case TYPE_UP:
@@ -104,38 +106,58 @@ export const save = (date) => {
                 }
             });
 
-            logs.map((log, index) => {
+            logs.map((log) => {
                 switch (log.get('type')) {
                     case TYPE_UP:
                     case TYPE_DOWN:
                     case TYPE_DEPOSIT:
-                    case TYPE_WITHDRAW:
+                    case TYPE_WITHDRAW: {
                         let player = log.get('player');
-                        let player1 = players.find(function (value, index, arr) {
+                        let player1 = players.find(function (value) {
                             return value.id === player.id;
                         });
                         if (!player1)
                             players.push(player);
+                    }
                         break;
                 }
             });
+            console.log(`action:report:save:players:${players && players.length}`);
 
-            logs.map((log, index) => {
+            logs.map((log) => {
+                switch (log.get('type')) {
+                    case TYPE_UP:
+                    case TYPE_DOWN: {
+                        let son = log.get('son');
+                        console.log(`action:report:save:logs.map((log):son:${son && son.get('name')}`);
+                        let son1 = sons.find(function (value) {
+                            return value.id === son.id;
+                        });
+                        if (!son1)
+                            sons.push(son);
+                    }
+                        break;
+                }
+            });
+            console.log(`action:report:save:sons:${sons && sons.length}`);
+
+            logs.map((log) => {
                 switch (log.get('type')) {
                     case TYPE_UP:
                     case TYPE_DOWN:
-                    case TYPE_SHUI:
+                    case TYPE_SHUI: {
                         let game = log.get('game');
-                        let game1 = games.find(function (value, index, arr) {
+                        let game1 = games.find(function (value) {
                             return value.id === game.id;
                         });
                         if (!game1)
                             games.push(game);
+                    }
                         break;
                 }
             });
 
-
+            console.log(`action:report:save:games:${games && games.length}`);
             let Report = Parse.Object.extend("Report");
             let report = new Report();
             report.set('up', up);
@@ -145,13 +167,17 @@ export const save = (date) => {
             report.set('shui', shui);
             report.set('games', games);
             report.set('players', players);
-            report.set('start', lastEnd);
-            report.set('end', date);
+            report.set('sons', sons);
+            report.set('start', start);
+            report.set('end', end);
+
+
+            console.log(`action:report:save:save:0:${JSON.stringify(report)}`);
             return report.save();
         }).then(function (report) {
             console.log(`action:report:save:save:${JSON.stringify(report)}`);
         }, function (error) {
-
+            console.log(`action:report:save:error:${JSON.stringify(error)}`);
         })
 
 

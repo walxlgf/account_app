@@ -71,7 +71,8 @@ class Report extends React.Component {
         let shui = report.get('shui');
         let players = report.get('players');
         let games = report.get('games');
-        result = `上分${up} 下分${down} 充值${deposit} 提现${withdraw} 水${shui} 玩家${players ? players.length : 0} 比赛${games ? games.length : 0}`
+        let sons = report.get('sons');
+        result = `上分${up} 下分${down} 充值${deposit} 提现${withdraw} 水${shui} 玩家${players ? players.length : 0} 子玩家${sons ? sons.length : 0} 比赛${games ? games.length : 0}`
         return result;
     }
 
@@ -110,8 +111,7 @@ class Report extends React.Component {
                     <Button type="primary" inline size="small"
                         style={{ marginRight: '4px', marginLeft: '8px' }}
                         onClick={() => {
-                            let date = new Date();
-                            this.props.save(date);
+                            this.props.save();
                         }}
                     >生成报表</Button>
 

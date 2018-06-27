@@ -25,7 +25,8 @@ export const save = (data) => {
         let Rakeoff = Parse.Object.extend("Rakeoff");
         let rakeoff = new Rakeoff();
         rakeoff.set('name', data.name);
-        rakeoff.set('rakeoff', data.rakeoff);
+        rakeoff.set('win', parseInt(data.win, 10));
+        rakeoff.set('lose', parseInt(data.lose, 10));
         rakeoff.set('user', Parse.User.current());
         rakeoff.save()
             .then(function (rakeoff) {

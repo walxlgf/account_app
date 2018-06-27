@@ -55,10 +55,11 @@ class LoginList extends React.Component {
                 >
                     <InputItem
                         {...getFieldProps('username', {
+                            initialValue: 'admin1',
                             rules: [
                                 { required: true, message: '请输入用户名。' },
                             ],
-                        }) }
+                        })}
                         clear
                         placeholder="请输入用户名"
                         error={!!getFieldError('username')}
@@ -69,10 +70,11 @@ class LoginList extends React.Component {
 
                     <InputItem
                         {...getFieldProps('password', {
+                            initialValue: '1',
                             rules: [
                                 { required: true, message: '请输入密码。' },
                             ],
-                        }) }
+                        })}
                         type='password'
                         clear
                         placeholder="请输入密码"

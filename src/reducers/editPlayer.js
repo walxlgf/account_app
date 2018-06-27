@@ -4,6 +4,7 @@ import {
     SET,
     SAVE, SAVE_FAILED, SAVE_SUCCESSFUL,
     FETCH_RAKEOFFS, FETCH_RAKEOFFS_FAILED, FETCH_RAKEOFFS_SUCCESSFUL,
+    GET, GET_FAILED, GET_SUCCESSFUL,
     CLEAR
 } from '../actions/editPlayer'
 
@@ -14,6 +15,7 @@ import {
 
 
 const initialState = {
+    playerBySet: null,
     //保存 包括新增和更新
     saving: false,//正在保存
     saved: false,//保存是否成功
@@ -21,6 +23,9 @@ const initialState = {
 
     fetching: false,//正在查询
     rakeoffs: [],
+
+    getting: false,
+
     error: null,
 };
 
@@ -29,7 +34,7 @@ export function editPlayer(state = initialState, action) {
         case SET:
             return {
                 ...state,
-                player: action.player,
+                playerBySet: action.player,
             }
         case FETCH_RAKEOFFS:
             return {
@@ -53,12 +58,31 @@ export function editPlayer(state = initialState, action) {
                 error: null,
             };
 
+        case GET:
+            return {
+                ...state,
+                getting: true,
+                error: null
+            }
+        case GET_FAILED:
+            return {
+                ...state,
+                getting: false,
+                error: action.error
+            };
+        case GET_SUCCESSFUL:
+            return {
+                ...state,
+                getting: false,
+                player: action.player,
+                error: null,
+            };
+
         case SAVE:
             return {
                 ...state,
                 saving: true,
                 saved: false,
-                player: action.player,
                 error: null
             }
         case SAVE_FAILED:
@@ -66,7 +90,6 @@ export function editPlayer(state = initialState, action) {
                 ...state,
                 saving: false,
                 saved: false,
-                player: action.player,
                 error: action.error,
             };
         case SAVE_SUCCESSFUL:

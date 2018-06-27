@@ -84,20 +84,21 @@ export const save = (gamePlayers, game) => {
         // 4生成水log
         // 设置game的状态为GAME_FINISHED
         dispatch({ type: SAVE });
+        let gPlayers = [];
         updateGPs(gamePlayers)
             .then(function (gps) {
                 console.log(`action:gameDowns:saveGamePlayers:${gps.length}`)
                 return setPlayersBalance(gps);
             }).then(function (players) {
+                gPlayers = [...players];
                 console.log(`action:gameDowns:setPlayersBalance:${players.length}`)
                 return insertGameDownsLog(gamePlayers);
-                dispatch({ type: SAVE_SUCCESSFUL, gamePlayers });
             }).then(function (logs) {
                 console.log(`action:gameDowns:insertGameDownsLog:${logs.length}`)
                 return setGameStatus(game, STATUS_FINISHED)
             }).then(function (game) {
                 console.log(`action:gameDowns:setGameStatus:${game}`)
-                dispatch({ type: SAVE_SUCCESSFUL, gamePlayers });
+                dispatch({ type: SAVE_SUCCESSFUL, gPlayers });
             }, function (error) {
                 dispatch({ type: SAVE_FAILED, error });
             });

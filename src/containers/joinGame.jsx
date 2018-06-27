@@ -80,7 +80,7 @@ class JoinGameList extends React.Component {
 
 
     render() {
-        const { getFieldProps, getFieldValue, getFieldError, setFieldsValue } = this.props.form;
+        const { getFieldProps, setFieldsValue } = this.props.form;
 
         getFieldProps('game', {
             initialValue: [],
@@ -99,6 +99,16 @@ class JoinGameList extends React.Component {
         });
 
 
+
+        getFieldProps('son', {
+            initialValue: [],
+            rules: [
+                { required: true, message: '请选择Son。' },
+                { validator: this.validateField },
+            ],
+        });
+
+
         let pickerGames = [];
         for (let obj of this.props.games) {
             let game = { value: obj.id, label: obj.get('name') }
@@ -109,9 +119,16 @@ class JoinGameList extends React.Component {
 
         let pickerPlayers = [];
         for (let obj of this.props.players) {
-            let player = { value: obj.id, label: obj.get('name') }
+            let sons = obj.get('sons');
+            let children = [];
+            sons.map((value) => {
+                let son = { value: value.id, label: value.get('name') }
+                children.push(son);
+            });
+            let player = { value: obj.id, label: obj.get('name'), children }
             pickerPlayers.push(player);
         }
+
 
         let title = '参加比赛';
         let header = '请设置参加比赛';
@@ -159,17 +176,28 @@ class JoinGameList extends React.Component {
                                 title="选择Player:"
                                 value={this.state.pickerPlayer}
                                 onChange={v => {
-                                    this.setState({ pickerPlayer: v })
+                                    console.log(`joinGame:Picker:onChange:v:${v}`);
+                                    this.setState({ pickerPlayer: v });
                                 }}
                                 onOk={v => {
-                                    let pickerPlayer;
+                                    console.log(`joinGame:Picker:onOk:v:${v}`);
+                                    let player;
                                     if (this.props.players.length > 0) {
-                                        pickerPlayer = this.props.players.find(function (value, index, arr) {
-                                            return value.id == v;
+                                        player = this.props.players.find(function (value) {
+                                            return value.id == v[0];
                                         });
                                     }
-                                    if (pickerPlayer)
-                                        setFieldsValue({ player: pickerPlayer })
+                                    if (player) {
+                                        console.log(`joinGame:Picker:onOk:player:${player && player.get('name')}`);
+                                        setFieldsValue({ player })
+                                        let son = player.get('sons').find(function (value) {
+                                            return value.id == v[1];
+                                        });
+                                        if (son){
+                                            console.log(`joinGame:Picker:onOk:son:${son && son.get('name')}`);                            
+                                            setFieldsValue({ son })
+                                        }
+                                    }
                                 }}
                             >
                                 <List.Item arrow="horizontal">选择玩家:</List.Item>

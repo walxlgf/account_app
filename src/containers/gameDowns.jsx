@@ -124,9 +124,9 @@ class GameDownsList extends React.Component {
         let shuiChips = gamePlayer.get('shuiChips');
 
         if (finalChips)
-            result = `买入${chips} 结算${finalChips} 赢${winChips} 水${shuiChips}`
+            result = `买${chips} 算${finalChips} 赢${winChips} 水${shuiChips}`
         else
-            result = `买入${chips} 请单击输入最终筹码`;
+            result = `买${chips} 请单击输入最终筹码`;
 
         return result;
     }
@@ -141,7 +141,8 @@ class GameDownsList extends React.Component {
         let that = this;
         let game = gamePlayer.get('game');
         let player = gamePlayer.get('player');
-        prompt('结算', `玩家：${player.get('name')} 比赛：${game.get('name')} `, [
+        let son = gamePlayer.get('son');
+        prompt('结算', `玩家：${son.get('name')} [${player.get('name')}] 比赛：${game.get('name')} `, [
             { text: '取消' },
             { text: '确定 ', onPress: value => { that.props.setFinalChips(gamePlayer, parseInt(value, 10)) } },
         ], 'default', '', ['请输入最终筹码']);
@@ -153,14 +154,12 @@ class GameDownsList extends React.Component {
 
 
     render() {
-        const { getFieldProps, getFieldValue, getFieldError, setFieldsValue } = this.props.form;
         let game = this.props.game;
         let gps = this.props.gamePlayers;
-
         return (
             <div>
                 <EditHeader
-                    title={'最终分配'}
+                    title={'结算'}
                     opt={'add'}
                     save={() => this.onSubmit()}
                     goBack={() => {
@@ -185,7 +184,7 @@ class GameDownsList extends React.Component {
                                     arrow="horizontal"
                                     multipleLine
                                     onClick={() => { this.onPlayerClicked(gp) }}>
-                                    {gp.get('player').get('name')}: {this.getChipsString(gp)}
+                                    {gp.get('son').get('name')}[{gp.get('player').get('name')}]: {this.getChipsString(gp)}
                                     <Brief >
                                         {this.getRakeoffString(gp)}
                                     </Brief>

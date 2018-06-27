@@ -26,6 +26,7 @@ if (isIPhone) {
         onTouchStart: e => e.preventDefault(),
     };
 }
+const BUTTONS = ['上分', '取消'];
 
 
 const Item = List.Item;
@@ -35,7 +36,6 @@ const myList = {
     flexBasis: 'initial',
 }
 
-const BUTTONS = ['上分', '取消'];
 
 
 class ViewGame extends React.Component {
@@ -149,8 +149,9 @@ class ViewGame extends React.Component {
                         style={{ marginRight: '4px', marginLeft: '8px' }}
                         disabled={STATUS_FINISHED === game.get('status') ? true : false}
                         onClick={() => {
-                            this.props.setJoinGame(this.props.game);
-                            this.props.history.push('/joinGameInner')
+                            // this.props.setJoinGame(this.props.game);
+                            // this.props.history.push('/joinGameInner')
+                            this.props.history.push('/joinGame')
                         }}
                     >玩家参赛</Button>
                     {/* use `am-button-borderfix`. because Multiple buttons inline arranged, the last one border-right may not display */}
@@ -162,7 +163,7 @@ class ViewGame extends React.Component {
                             this.props.setGameDown(game, gamePlayers);
                             this.props.history.push('/gameDowns')
                         }}
-                    >最终分配</Button>
+                    >结算</Button>
 
 
                     <WhiteSpace size='md' />
@@ -182,7 +183,7 @@ class ViewGame extends React.Component {
                                     arrow='horizontal'
                                     extra={`${gp.get('chips')}积分`}
                                     onClick={() => { this.onPlayerClicked(gp) }}
-                                >{gp.get('player').get('name')}</Item>
+                                >{gp.get('son').get('name')}[{gp.get('player').get('name')}]</Item>
                             ))
                         }
                     </List>

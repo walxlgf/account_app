@@ -15,12 +15,13 @@ export const TYPE_SHUI = "SHUI";//水钱
  * @param {*} type 四种 up down pay repay 
  * @param {*} amount 金额 只能大于0
  */
-export function insertLog(game, player, type, amount) {
+export function insertLog(game, player, son, type, amount) {
     let Log = Parse.Object.extend("Log");
     let log = new Log();
     log.set('user', Parse.User.current());
     log.set('game', game);
     log.set('player', player);
+    log.set('son', son);
     log.set('type', type);
     log.set('amount', amount);
     //日志一般都在操作之后插入 所以余额直接插入player的余额
@@ -41,6 +42,7 @@ export function insertGameDownsLog(gamePlayers) {
         if (!game)
             game = gp.get('game');
         let player = gp.get('player');
+        let son = gp.get('son');
         let finalChips = gp.get('finalChips');
         let shuiChips = gp.get('shuiChips');
 
@@ -50,6 +52,7 @@ export function insertGameDownsLog(gamePlayers) {
         log.set('user', Parse.User.current());
         log.set('game', game);
         log.set('player', player);
+        log.set('son', son);
         log.set('type', TYPE_DOWN);
         log.set('amount', finalChips - shuiChips);
         //日志一般都在操作之后插入 所以余额直接插入player的余额
@@ -57,6 +60,7 @@ export function insertGameDownsLog(gamePlayers) {
         logs.push(log);
     })
 
+    //水钱
     let log = new Log();
     log.set('user', Parse.User.current());
     log.set('game', game);

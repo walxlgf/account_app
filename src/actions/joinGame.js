@@ -35,7 +35,7 @@ export const fetchPlayers = () => {
         dispatch({ type: FETCH_PLAYERS });
         let Player = Parse.Object.extend("Player");
         let query = new Parse.Query(Player);
-        query.descending('_created_at');
+        query.include('sons')
         query.find()
             .then(function (results) {
                 dispatch({ type: FETCH_PLAYERS_SUCCESSFUL, players: results });
@@ -57,7 +57,6 @@ export const fetchGames = () => {
         dispatch({ type: FETCH_GAMES });
         let Game = Parse.Object.extend("Game");
         let query = new Parse.Query(Game);
-        query.descending('_created_at');
         query.find()
             .then(function (results) {
                 dispatch({ type: FETCH_GAMES_SUCCESSFUL, games: results });
@@ -70,14 +69,15 @@ export const fetchGames = () => {
 
 /**
  * 新建时保存
- * @param {object} gamePlayerData 
+ * @param {object} data 
  */
-export const save = (gamePlayerData) => {
+export const save = (data) => {
     return dispatch => {
         let GamePlayer = Parse.Object.extend("GamePlayer");
         let gamePlayer = new GamePlayer();
-        gamePlayer.set('game', gamePlayerData.game);
-        gamePlayer.set('player', gamePlayerData.player);
+        gamePlayer.set('game', data.game);
+        gamePlayer.set('player', data.player);
+        gamePlayer.set('son', data.son);
         gamePlayer.set('chips', 0);
         dispatch({ type: SAVE, gamePlayer });
         gamePlayer.save()

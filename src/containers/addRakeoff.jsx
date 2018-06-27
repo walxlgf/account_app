@@ -5,7 +5,7 @@ import { createForm, createFormField } from 'rc-form';
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router';
-import { save } from "../actions/addRakeoff";
+import { save,clear } from "../actions/addRakeoff";
 import { EditHeader } from '../components/editHeader';
 
 const Item = List.Item;
@@ -36,12 +36,13 @@ class RakeoffList extends React.Component {
 
     componentWillUnmount() {
         console.log(`rakeoff:componentWillUnmount`);
+        this.props.clear();
     }
 
     validateField = (rule, value, callback) => {
         if (rule.field === 'lose') {
             if (value) {
-                if (value < 0 || value >= 100)
+                if (value <= 0 || value >= 100)
                     callback(new Error('百分是只能0到100之前的整数'));
                 else
                     callback();
@@ -51,7 +52,7 @@ class RakeoffList extends React.Component {
         }
         else if (rule.field === 'win') {
             if (value) {
-                if (value < 0 || value >= 100)
+                if (value <= 0 || value >= 100)
                     callback(new Error('百分是只能0到100之前的整数'));
                 else
                     callback();
@@ -141,7 +142,7 @@ class RakeoffList extends React.Component {
                         >赢:</InputItem>
                         <InputItem
                             {...getFieldProps('lose', {
-                                initialValue: 0,
+                                initialValue: 2,
                                 name: 'lose',
                                 rules: [
                                     { required: true, message: '请输入输时返水比例(0到100)%' },
@@ -180,6 +181,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         save: bindActionCreators(save, dispatch),
+        clear: bindActionCreators(clear, dispatch),
     }
 }
 

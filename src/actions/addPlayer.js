@@ -25,20 +25,61 @@ export const clear = () => {
  */
 export const save = (data) => {
     return dispatch => {
-        let Player = Parse.Object.extend("Player");
-        let player = new Player();
-        player.set('name', data.name);
-        player.set('startTime', data.startTime);
-        player.set('duration', data.duration);
-        player.set('user', Parse.User.current());
+        //保存sons
+        //获取到保存后的sons赋值给player.sons属性
+        //更sons中每一个son的player
+
         dispatch({ type: SAVE });
-        player.save()
-            .then(function (player) {
-                dispatch({ type: SAVE_SUCCESSFUL, player });
+        let Son = Parse.Object.extend("Son");
+        let sonsData = [];
+        data.sons.map((s) => {
+            let son = new Son();
+            son.set('name', s.name);
+            sonsData.push(son);
+        })
+
+        let gSons = [];
+        let gPlayer;
+        //
+        Parse.Object.saveAll(sonsData)
+            .then(function (sons) {
+                console.log(`action:addPlayer:save:saveAll(sons):${sons && sons.length}`)
+                gSons = [...sons];
+                let Player = Parse.Object.extend("Player");
+                let player = new Player();
+                player.set('name', data.name);
+                player.set('rakeoff', data.rakeoff);
+                player.set('sons', sons);
+                player.set('balance', 0);
+                player.set('user', Parse.User.current());
+                return player.save()
+            }).then(function (player) {
+                gPlayer = player;
+                console.log(`action:addPlayer:save:save():${player && player.get('name')}`)
+                gSons.map((son, index) => {
+                    son.set('player', player);
+                })
+                return Parse.Object.saveAll(gSons)
+            }).then(function (sons) {
+                dispatch({ type: SAVE_SUCCESSFUL, gPlayer });
+                console.log(`action:addPlayer:save:saveAll(sonsArr):${sons && sons.length}`)
             }, function (error) {
-                console.log(`action:player:save:error:${JSON.stringify(error)}`)
-                dispatch({ type: SAVE_FAILED, player, error });
+                dispatch({ type: SAVE_FAILED, error });
             });
+
+        // let Player = Parse.Object.extend("Player");
+        // let player = new Player();
+        // player.set('name', data.name);
+        // player.set('rakeoff', data.rakeoff);
+        // player.set('balance', 0);
+        // player.set('user', Parse.User.current());
+        // player.save()
+        //     .then(function (player) {
+        //         dispatch({ type: SAVE_SUCCESSFUL, player });
+        //     }, function (error) {
+        //         console.log(`action:player:save:error:${JSON.stringify(error)}`)
+        //         dispatch({ type: SAVE_FAILED, player, error });
+        //     });
     }
 }
 
